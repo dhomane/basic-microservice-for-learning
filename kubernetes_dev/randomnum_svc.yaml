@@ -1,0 +1,49 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: calculator-app
+  name: randomnum
+  labels:
+    app: calculator-app
+    service: randomnum
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: calculator-app
+      service: randomnum
+  template:
+    metadata:
+      labels:
+        app: calculator-app
+        service: randomnum
+    spec:
+      containers:
+      - name: randomnum
+        image: registry.gitlab.com/keiran.steele/basic-microservice-for-learning/random_num:latest_dev
+      imagePullSecrets:
+      - name: regcred
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: calculator-app
+  name: randomnum
+  labels:
+    app: calculator-app
+    service: randomnum
+
+spec:
+  selector:
+    app: calculator-app
+    service: randomnum
+
+  type: ClusterIP
+  ports:
+    - name: randomnum
+      port: 7500
+      targetPort: 7500

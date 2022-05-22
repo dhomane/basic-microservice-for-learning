@@ -1,0 +1,85 @@
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: calculator-app
+  labels:
+    app: calculator-app
+    
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: calculator-app
+  name: calculator
+  labels:
+    app: calculator-app
+    service: calculator
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: calculator-app
+      svc: calculator
+  template:
+    metadata:
+      labels:
+        app: calculator-app
+        svc: calculator
+    spec:
+      containers:
+      - name: calculator-app
+        image: registry.gitlab.com/keiran.steele/basic-microservice-for-learning/calculator:latest_dev
+        env:
+        - name: RANDOMNUM_HOST
+          value: "randomnum"
+        - name: RANDOMNUM_PORT
+          value: "7500"
+        - name: DATABASE_HOST
+          value: "database"
+        - name: DATABASE_PORT
+          value: "7502"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: calculator-app
+  name: calc
+  labels:
+    app: calculator-app
+    service: calculator
+spec:
+  selector:
+    app: calculator-app
+    svc: calculator
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 7501
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: calculator-app
+    svc: calculator
+  name: calculator
+  namespace: calculator-app
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: calc.kube.raceyrocket.com
+    http:
+      paths:
+      - path: /calc
+        backend:
+          serviceName: calc
+          servicePort: http

@@ -1,0 +1,49 @@
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: calculator-app
+  name: database
+  labels:
+    app: calculator-app
+    service: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calculator-app
+      service: database
+  template:
+    metadata:
+      labels:
+        app: calculator-app
+        service: database
+    spec:
+      containers:
+      - name: database
+        image: registry.gitlab.com/keiran.steele/basic-microservice-for-learning/database:latest
+      imagePullSecrets:
+      - name: regcred
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: calculator-app
+  name: database
+  labels:
+    app: calculator-app
+    service: database
+
+spec:
+  selector:
+    app: calculator-app
+    service: database
+
+  type: ClusterIP
+  ports:
+    - name: database
+      port: 7502
+      targetPort: 7502
